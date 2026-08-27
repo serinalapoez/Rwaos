@@ -20,6 +20,9 @@ export function SiteHeader() {
           <Link href="/onboard" className="hover:text-rwaos-text">
             Onboard
           </Link>
+          <Link href="/agents" className="hover:text-rwaos-text">
+            Agents
+          </Link>
         </nav>
       </div>
     </header>

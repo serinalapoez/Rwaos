@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prepareTransactions, signAndSend, pollTransactionStatus } from "@/lib/brickken";
+import { checkAgentPermission, addAgentLogEntry } from "@/lib/rams";
 
 const CHAIN_ID = process.env.BRICKKEN_CHAIN_ID ?? "aa36a7";
 const INVESTOR_ADDRESS = process.env.BRICKKEN_INVESTOR_ADDRESS ?? "";
@@ -14,6 +15,22 @@ export async function POST(request: NextRequest) {
         { error: "investorEmail, tokenSymbol, and investmentAmount are required." },
         { status: 400 }
       );
+    }
+
+    const permission = checkAgentPermission("investor-agent", "newInvest", {
+      amountUsd: Number(investmentAmount),
+      tokenSymbol,
+    });
+
+    addAgentLogEntry({
+      agentId: "investor-agent",
+      action: "newInvest",
+      outcome: permission.allowed ? "approved" : "rejected",
+      reason: permission.reason,
+    });
+
+    if (!permission.allowed) {
+      return NextResponse.json({ error: permission.reason }, { status: 403 });
     }
 
     if (!INVESTOR_ADDRESS || !INVESTOR_PRIVATE_KEY) {
@@ -40,6 +57,13 @@ export async function POST(request: NextRequest) {
     const finalStatus = await pollTransactionStatus(sent.txId, {
       intervalMs: 3000,
       timeoutMs: 45000,
+    });
+
+    addAgentLogEntry({
+      agentId: "investor-agent",
+      action: "newInvest",
+      outcome: "executed",
+      reason: `Transaction ${sent.txId} reached status ${finalStatus.status}.`,
     });
 
     return NextResponse.json({ txId: sent.txId, status: finalStatus });
