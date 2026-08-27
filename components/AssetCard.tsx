@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Asset, Offering } from "@/types/domain";
 import { CATEGORY_LABELS } from "@/lib/sandbox-data";
+import { CategoryStamp } from "@/components/CategoryStamp";
 
 function formatUsd(value: number) {
   return new Intl.NumberFormat("en-US", {
@@ -25,18 +26,21 @@ export function AssetCard({
   return (
     <Link
       href={`/assets/${asset.id}`}
-      className="block rounded-xl border border-rwaos-border bg-rwaos-panel p-5 transition hover:border-rwaos-accent2"
+      className="block rounded-lg border border-rwaos-border bg-rwaos-panel p-5 transition hover:border-rwaos-accent2"
     >
       <div className="flex items-center justify-between">
-        <span className="rounded-full bg-rwaos-bg px-3 py-1 text-xs uppercase tracking-wide text-rwaos-muted">
-          {CATEGORY_LABELS[asset.category]}
-        </span>
-        <span className="text-xs uppercase tracking-wide text-rwaos-accent">
+        <div className="flex items-center gap-3">
+          <CategoryStamp category={asset.category} />
+          <span className="font-mono text-xs uppercase tracking-wide text-rwaos-muted">
+            {CATEGORY_LABELS[asset.category]}
+          </span>
+        </div>
+        <span className="font-mono text-xs uppercase tracking-wide text-rwaos-accent">
           {offering.status}
         </span>
       </div>
 
-      <h3 className="mt-3 text-lg font-semibold text-rwaos-text">
+      <h3 className="mt-4 font-serif text-lg text-rwaos-text">
         {asset.name}
       </h3>
       <p className="mt-1 line-clamp-2 text-sm text-rwaos-muted">
@@ -44,13 +48,13 @@ export function AssetCard({
       </p>
 
       <div className="mt-4">
-        <div className="h-2 w-full overflow-hidden rounded-full bg-rwaos-bg">
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-rwaos-bg">
           <div
             className="h-full rounded-full bg-rwaos-accent"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <div className="mt-2 flex justify-between text-xs text-rwaos-muted">
+        <div className="mt-2 flex justify-between font-mono text-xs text-rwaos-muted">
           <span>{formatUsd(offering.raisedUsd)} raised</span>
           <span>{progress}% of {formatUsd(offering.raiseTargetUsd)}</span>
         </div>

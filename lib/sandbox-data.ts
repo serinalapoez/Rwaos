@@ -1,48 +1,50 @@
 import { Asset, Offering } from "@/types/domain";
 
 /**
- * Sandbox/demo data only. This is not live blockchain data. It exists so
- * the UI has something to render before Brickken endpoints are wired in.
- * The UI must always make clear this is demo data, not a live position.
+ * Sandbox/demo data only. Asset valuations reflect a plausible appraisal of
+ * the underlying physical asset and are descriptive only. Offering amounts
+ * (raiseTargetUsd, raisedUsd, min/max investment) are deliberately small,
+ * because they are meant to be produced by genuine Brickken sandbox test
+ * USDT transactions, not a fictional headline figure.
  */
 
 export const ASSETS: Asset[] = [
   {
-    id: "green-valley-farm",
-    name: "Green Valley Farm",
+    id: "origin-farms",
+    name: "Origin Farms, Rivers State",
     category: "agriculture",
     description:
-      "An agricultural asset raising capital to expand irrigation and crop output. Investors may receive an agreed share of farm revenue.",
+      "A cassava and plantain farm raising capital to expand irrigation and processing capacity. Investors may receive an agreed share of farm revenue.",
     valuationUsd: 100000,
     location: "Rivers State",
     documentationUrl: "#",
   },
   {
-    id: "lagos-commercial-property",
-    name: "Lagos Commercial Property",
+    id: "five-star-hotel-lagos",
+    name: "Five Star Hotel, Lagos",
     category: "property",
     description:
-      "A commercial property offering. Investors may receive rental income and/or other defined returns.",
+      "A commercial hotel property offering. Investors may receive a share of room and event revenue.",
     valuationUsd: 2000000,
     location: "Lagos",
     documentationUrl: "#",
   },
   {
-    id: "mv-atlantic",
-    name: "MV Atlantic",
+    id: "mv-bonny-trader",
+    name: "MV Bonny Trader",
     category: "maritime",
     description:
-      "A maritime vessel asset operated by an advanced Asset Agent under a defined RAMS mandate. Investors may receive a defined participation in vessel revenue.",
+      "A cargo vessel operating out of Bonny Island, run by an Asset Agent under a defined RAMS mandate. Investors may receive a defined participation in freight revenue.",
     valuationUsd: 5000000,
-    location: "Atlantic route",
+    location: "Bonny Island",
     documentationUrl: "#",
   },
   {
-    id: "afrobeats-royalty-fund",
-    name: "Afrobeats Royalty Fund",
+    id: "sabi-sounds-royalty-fund",
+    name: "Sabi Sounds Royalty Fund",
     category: "music-royalties",
     description:
-      "A royalty catalogue fund. Investors may receive a defined share of royalty income.",
+      "A catalogue of streaming and licensing royalties. Investors may receive a defined share of royalty income.",
     valuationUsd: 200000,
     documentationUrl: "#",
   },
@@ -50,52 +52,52 @@ export const ASSETS: Asset[] = [
 
 export const OFFERINGS: Offering[] = [
   {
-    id: "gvf-sto",
-    assetId: "green-valley-farm",
-    tokenSymbol: "GVF",
-    raiseTargetUsd: 40000,
-    raisedUsd: 37500,
-    minInvestmentUsd: 100,
-    maxInvestmentUsd: 5000,
+    id: "orgn-sto",
+    assetId: "origin-farms",
+    tokenSymbol: "ORGN",
+    raiseTargetUsd: 2000,
+    raisedUsd: 1500,
+    minInvestmentUsd: 10,
+    maxInvestmentUsd: 200,
     paymentToken: "Sandbox USDT",
     startDate: "2026-08-30",
     endDate: "2026-09-30",
     status: "funding",
   },
   {
-    id: "lago-sto",
-    assetId: "lagos-commercial-property",
-    tokenSymbol: "LAGO",
-    raiseTargetUsd: 500000,
-    raisedUsd: 210000,
-    minInvestmentUsd: 100,
-    maxInvestmentUsd: 20000,
+    id: "fshl-sto",
+    assetId: "five-star-hotel-lagos",
+    tokenSymbol: "FSHL",
+    raiseTargetUsd: 5000,
+    raisedUsd: 1800,
+    minInvestmentUsd: 20,
+    maxInvestmentUsd: 500,
     paymentToken: "Sandbox USDT",
     startDate: "2026-08-15",
     endDate: "2026-10-15",
     status: "funding",
   },
   {
-    id: "atl-sto",
-    assetId: "mv-atlantic",
-    tokenSymbol: "ATL",
-    raiseTargetUsd: 1000000,
-    raisedUsd: 640000,
-    minInvestmentUsd: 250,
-    maxInvestmentUsd: 50000,
+    id: "bntr-sto",
+    assetId: "mv-bonny-trader",
+    tokenSymbol: "BNTR",
+    raiseTargetUsd: 8000,
+    raisedUsd: 4200,
+    minInvestmentUsd: 50,
+    maxInvestmentUsd: 1000,
     paymentToken: "Sandbox USDT",
     startDate: "2026-08-01",
     endDate: "2026-09-15",
     status: "funding",
   },
   {
-    id: "afro-sto",
-    assetId: "afrobeats-royalty-fund",
-    tokenSymbol: "AFRO",
-    raiseTargetUsd: 200000,
-    raisedUsd: 200000,
-    minInvestmentUsd: 50,
-    maxInvestmentUsd: 10000,
+    id: "sabi-sto",
+    assetId: "sabi-sounds-royalty-fund",
+    tokenSymbol: "SABI",
+    raiseTargetUsd: 3000,
+    raisedUsd: 3000,
+    minInvestmentUsd: 10,
+    maxInvestmentUsd: 300,
     paymentToken: "Sandbox USDT",
     startDate: "2026-07-01",
     endDate: "2026-08-01",
