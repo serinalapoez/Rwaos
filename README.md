@@ -65,9 +65,6 @@ lib/sandbox-data.ts Demo assets and offerings shown in the UI
 types/domain.ts Shared domain types
 
 
-## Writing rules for this project
-
-1. No long dashes (em dash or en dash) in code, comments, UI text, or docs.
 ## AI tools disclosure
 
 Portions of this codebase (scaffolding, UI components, the Brickken API client, and this README) were written with assistance from Claude (Anthropic). All Brickken integration logic was reviewed against Brickken's official API reference and guides before use, and every endpoint call is tested against the live sandbox rather than mocked.
