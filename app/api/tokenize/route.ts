@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prepareTransactions, signAndSend, pollTransactionStatus } from "@/lib/brickken";
 import { checkAgentPermission, addAgentLogEntry } from "@/lib/rams";
+import { isAuthorizedOperator } from "@/lib/auth";
 
 const CHAIN_ID = process.env.BRICKKEN_CHAIN_ID ?? "aa36a7";
 const SIGNER_ADDRESS = process.env.BRICKKEN_SIGNER_ADDRESS ?? "";
 const SIGNER_PRIVATE_KEY = process.env.BRICKKEN_SIGNER_PRIVATE_KEY ?? "";
 
 export async function POST(request: NextRequest) {
+  if (!isAuthorizedOperator(request)) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
   try {
     const { tokenizerEmail, name, tokenSymbol, tokenType, supplyCap, url } =
       await request.json();
