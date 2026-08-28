@@ -6,31 +6,50 @@ Tokenize Real World Assets. Fund them. Operate them onchain.
 
 ## What this is
 
-RWAOS lets an asset owner tokenize an asset, launch an offering (STO), and whitelist investors, all against Brickken's sandbox. Investors can browse a marketplace of demo assets, get whitelisted, and (in progress) invest and claim tokens. Four demo assets ship with the app: Green Valley Farm, Lagos Commercial Property, MV Atlantic, and Afrobeats Royalty Fund.
+RWAOS lets an asset owner tokenize an asset, launch an offering (STO), and whitelist investors, all against Brickken's sandbox. Investors can browse a marketplace of demo assets, get whitelisted, invest, and claim tokens. Four demo assets ship with the app: Origin Farms (Rivers State), Five Star Hotel (Lagos), MV Bonny Trader, and Sabi Sounds Royalty Fund. Two agents (an Issuer Agent and an Investor Agent) operate under RAMS-style permission limits, enforced server-side before any Brickken call is made.
 
 ## Brickken integration
 
-- **Surface used:** REST (`/prepare-transactions`, `/send-transactions`, `/get-transaction-status`, `/get-whitelist-status`).
+### Dapp API (REST)
+
+- **Surface used:** REST (`/prepare-transactions`, `/send-transactions`, `/get-transaction-status`, `/get-whitelist-status`, `/get-stos`).
 - **Network:** Ethereum Sepolia, chainId `aa36a7` (`11155111`).
-- **Methods called so far:** `newTokenization`, `newSto`, `whitelist`.
-- **Pattern used:** prepare an unsigned transaction, sign it server-side with the project's signer wallet, send it, then poll `get-transaction-status` until it confirms. Implemented in `lib/brickken.ts`.
-- **Transaction hashes:** to be added here once confirmed onchain runs are complete, ahead of submission.
-- **Signer wallet:** kept only in `.env.local`, never committed. Set your own before running.
+- **Methods called:** `newTokenization`, `newSto`, `whitelist`, `newInvest`, `claimTokens`.
+- **Pattern used:** prepare an unsigned transaction, sign it server-side with the project's signer or investor wallet, send it, then poll `get-transaction-status` until it confirms. Implemented in `lib/brickken.ts`.
+
+### Agentic API (CLI, x402)
+
+- **Surface used:** CLI (`brickken-cli`), covering the Agentic Challenge track.
+- **Network:** Ethereum Sepolia, chainId `11155111`.
+- **What it demonstrates:** an agent paying for its own API call. `brickken-cli faucet bkn` was run twice: once authenticated with an API key (no payment), and once authenticated with only a private key, which triggered a genuine x402 handshake, the agent paid 0.01 USDC on Ethereum Sepolia to Brickken's facilitator address, and received 100 BKN in return.
+
+## Transaction log
+
+All transactions below are genuine, confirmed on Ethereum Sepolia (chainId `11155111`), produced by this build against Brickken's sandbox. No amount here represents live currency.
+
+| Action | Method / command | Wallet | Transaction hash |
+|---|---|---|---|
+| Launch offering for Origin Farms (ORGN) | `newSto` | Issuer signer | `0x6a2a295da762c8b402d65b20a421645987989a0532602275070ebde6a3fe96b3` |
+| BKN faucet claim, API key path | `brickken-cli faucet bkn` | Investor wallet | `0x58e12e96ff3f64cb43174908dfad64d2a2523775c92df524c282d03a37c72cca` |
+| BKN faucet claim, x402 path (agent paid 0.01 USDC) | `brickken-cli faucet bkn` (x402) | Issuer signer | `0x03b68012f29e155a190baccd08f5bc05d32f7739675cb5ea0f1f37f339fee301` |
+| USDC settlement for the x402 payment above | x402 settlement | Issuer signer | `0xa22dc67887d52276d14ed471038a9e90ed05dafb01cb72598fe5896b1864ec58` |
+
+More rows are added here as the tokenize, whitelist, invest, and claim steps are run for each of the four demo assets ahead of submission.
 
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript
 - Tailwind CSS
 - ethers v6, for signing transactions Brickken prepares
-- Brickken sandbox API (server-side only, called from `lib/brickken.ts`)
+- Brickken sandbox Dapp API (server-side only, called from `lib/brickken.ts`)
+- Brickken CLI (`brickken-cli`), for the Agentic API / x402 path
 
 ## Setup in Codespace
 
-1. Copy `.env.example` to `.env.local`.cp .env.example .env.local
+1. Copy `.env.example` to `.env.local`.
+cp .env.example .env.local
 
-
-2. Fill in `.env.local`: `BRICKKEN_API_KEY` (from Brickken), and a signer wallet. To generate a fresh signer wallet without ever displaying the private key, run:
-
+2. Fill in `.env.local`: `BRICKKEN_API_KEY` (from Brickken), an issuer signer wallet, an investor wallet, and `RWAOS_OPERATOR_TOKEN` (any long random string you choose). To generate a wallet without ever displaying the private key on screen, run:
 node -e "
 const { Wallet } = require('ethers');
 const fs = require('fs');
@@ -42,33 +61,34 @@ fs.writeFileSync('.env.local', env);
 console.log('Address (safe to share):', w.address);
 "
 
-
-3. Fund that address with Sepolia test ETH from a faucet.
+3. Fund both wallets with Sepolia test ETH from a faucet, and the investor wallet with sandbox test USDT for investing.
 
 4. Install dependencies and run.
-
 npm install
 npm run dev
 
+5. In the app, open `/onboard`, `/issuer`, or `/invest/[assetId]` and enter your `RWAOS_OPERATOR_TOKEN` once (stored locally on that device) before triggering any write action.
 
 ## Project structure
-
 app/ Pages and API routes (App Router)
 marketplace/ Browse demo assets and offerings
 assets/[id]/ Asset detail and offering terms
 onboard/ Investor whitelist request (calls Brickken sandbox)
 issuer/ Tokenize an asset, then launch its offering (calls Brickken sandbox)
+invest/[assetId]/ Invest, then claim tokens (calls Brickken sandbox)
+agents/ Agent identities, RAMS permissions, and activity log
 api/ Server routes that call Brickken sandbox
 components/ Reusable UI components
-lib/brickken.ts Brickken sandbox client: prepare, sign, send, poll
+lib/brickken.ts Brickken Dapp API client: prepare, sign, send, poll
+lib/rams.ts RAMS-style permission checks and activity log
 lib/sandbox-data.ts Demo assets and offerings shown in the UI
+lib/auth.ts Operator token check for write routes
 types/domain.ts Shared domain types
-
 
 ## AI tools disclosure
 
-Portions of this codebase (scaffolding, UI components, the Brickken API client, and this README) were written with assistance from Claude (Anthropic). All Brickken integration logic was reviewed against Brickken's official API reference and guides before use, and every endpoint call is tested against the live sandbox rather than mocked.
+Portions of this codebase (scaffolding, UI components, the Brickken API client, and this README) were written with assistance from Claude (Anthropic). All Brickken integration logic was reviewed against Brickken's official API reference and CLI output before use, and every endpoint call is tested against the live sandbox rather than mocked.
 
 ## Status
 
-Marketplace, investor onboarding (whitelist), and issuer flow (tokenize plus launch offering) are built and call Brickken's sandbox directly. Investment, claiming, closing offerings, dividend distribution, and the agent panel (ERC-8004 identity, RAMS permissions) are in progress.
+Marketplace, investor onboarding (whitelist), issuer flow (tokenize plus launch offering), invest, claim, and RAMS-gated agent permissions are built and confirmed working against Brickken's sandbox for at least one asset (Origin Farms). Remaining work before submission: repeat the full lifecycle for the other three demo assets, close an offering, and run a dividend distribution.
