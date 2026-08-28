@@ -33,8 +33,12 @@ All transactions below are genuine, confirmed on Ethereum Sepolia (chainId `1115
 | BKN faucet claim, API key path | `brickken-cli faucet bkn` | Investor wallet | `0x58e12e96ff3f64cb43174908dfad64d2a2523775c92df524c282d03a37c72cca` |
 | BKN faucet claim, x402 path (agent paid 0.01 USDC) | `brickken-cli faucet bkn` (x402) | Issuer signer | `0x03b68012f29e155a190baccd08f5bc05d32f7739675cb5ea0f1f37f339fee301` |
 | USDC settlement for the x402 payment above | x402 settlement | Issuer signer | `0xa22dc67887d52276d14ed471038a9e90ed05dafb01cb72598fe5896b1864ec58` |
-
-More rows are added here as the tokenize, whitelist, invest, and claim steps are run for each of the four demo assets ahead of submission.
+| Five Star Hotel (FSHL) tokenization | `newTokenization` | Issuer signer | `0xa908ca1a557215f3dd6e8f5f3b91058b2c33d9dba965b2b6ca12346ef8e60130` |
+| Five Star Hotel (FSHL) offering launch | `newSto` | Issuer signer | `0xe79c8bf98a00c13da2d62b038f4b7dd5a4d1dca810ff916468e8df8b2bc73eb6` |
+| MV Bonny Trader (BNTR) tokenization | `newTokenization` | Issuer signer | `0x8505d07cdd15e708147ba916ba61f0eabdefbd3ccd10e492da1dd12cc3982b36` |
+| MV Bonny Trader (BNTR) offering launch | `newSto` | Issuer signer | `0x63d5d648e47fe62057b7fdd08bb9a2bc590750d4fd284d67d7357beeadd52c40` |
+| Sabi Sounds (SABI) tokenization | `newTokenization` | Issuer signer | `0x6ffc1016ccf1cd2ff4202c2e5fb7f1f940ba3986ed09b2229ceee2f75d0c3c1a` |
+| Sabi Sounds (SABI) offering launch | `newSto` | Issuer signer | `0x614a2edf61064da3bda9e1bc1cd11dd4591af578d3ad488d784cc27eb95dddcb` |
 
 ## Stack
 

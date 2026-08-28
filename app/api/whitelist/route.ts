@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const sent = await signAndSend(prepared, SIGNER_PRIVATE_KEY);
     const finalStatus = await pollTransactionStatus(sent.txId, {
       intervalMs: 3000,
-      timeoutMs: 45000,
+      timeoutMs: 120000,
     });
 
     return NextResponse.json({ txId: sent.txId, status: finalStatus });

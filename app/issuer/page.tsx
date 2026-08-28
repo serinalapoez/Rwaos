@@ -53,12 +53,16 @@ export default function IssuerPage() {
   const [maxInvestment, setMaxInvestment] = useState(
     offering ? String(offering.maxInvestmentUsd) : "10000"
   );
-  const [startDate, setStartDate] = useState(
-    offering ? `${offering.startDate}T00:00:00.000Z` : ""
-  );
-  const [endDate, setEndDate] = useState(
-    offering ? `${offering.endDate}T23:59:59.000Z` : ""
-  );
+  const [startDate, setStartDate] = useState(() => {
+    const start = new Date();
+    start.setUTCDate(start.getUTCDate() + 1);
+    return start.toISOString();
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const end = new Date();
+    end.setUTCDate(end.getUTCDate() + 45);
+    return end.toISOString();
+  });
 
   const [stoState, setStoState] = useState<CallState>("idle");
   const [stoError, setStoError] = useState<string | null>(null);
@@ -79,8 +83,12 @@ export default function IssuerPage() {
     setMaxRaiseUSD(String(nextOffering.raiseTargetUsd));
     setMinInvestment(String(nextOffering.minInvestmentUsd));
     setMaxInvestment(String(nextOffering.maxInvestmentUsd));
-    setStartDate(`${nextOffering.startDate}T00:00:00.000Z`);
-    setEndDate(`${nextOffering.endDate}T23:59:59.000Z`);
+    const start = new Date();
+    start.setUTCDate(start.getUTCDate() + 1);
+    setStartDate(start.toISOString());
+    const end = new Date();
+    end.setUTCDate(end.getUTCDate() + 45);
+    setEndDate(end.toISOString());
   }
 
   async function handleTokenize(event: React.FormEvent) {
