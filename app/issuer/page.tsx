@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ASSETS, OFFERINGS } from "@/lib/sandbox-data";
 import { AssetCategory } from "@/types/domain";
+import { getOperatorToken } from "@/lib/operator-session";
+import { OperatorTokenField } from "@/components/OperatorTokenField";
 
 type CallState = "idle" | "submitting" | "confirmed" | "pending" | "failed";
 
@@ -91,7 +93,10 @@ export default function IssuerPage() {
     try {
       const response = await fetch("/api/tokenize", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-operator-token": getOperatorToken(),
+        },
         body: JSON.stringify({
           tokenizerEmail,
           name,
@@ -104,14 +109,16 @@ export default function IssuerPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setTokenizeError(data.error ?? "Tokenization failed.");
+        setTokenizeError(
+          data.details ? `${data.error} - ${JSON.stringify(data.details)}` : data.error ?? "Tokenization failed."
+        );
         setTokenizeState("failed");
         return;
       }
 
       setTokenizeTxId(data.txId ?? null);
       setTokenizeTxHash(data.status?.txHash ?? null);
-      setTokenizeState(data.status?.status === "confirmed" ? "confirmed" : "pending");
+      setTokenizeState(data.status?.status === "success" ? "confirmed" : "pending");
     } catch (error) {
       setTokenizeError(error instanceof Error ? error.message : "Unexpected error.");
       setTokenizeState("failed");
@@ -128,7 +135,10 @@ export default function IssuerPage() {
     try {
       const response = await fetch("/api/create-sto", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-operator-token": getOperatorToken(),
+        },
         body: JSON.stringify({
           tokenizerEmail,
           tokenSymbol,
@@ -146,14 +156,16 @@ export default function IssuerPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setStoError(data.error ?? "Creating the offering failed.");
+        setStoError(
+          data.details ? `${data.error} - ${JSON.stringify(data.details)}` : data.error ?? "Creating the offering failed."
+        );
         setStoState("failed");
         return;
       }
 
       setStoTxId(data.txId ?? null);
       setStoTxHash(data.status?.txHash ?? null);
-      setStoState(data.status?.status === "confirmed" ? "confirmed" : "pending");
+      setStoState(data.status?.status === "success" ? "confirmed" : "pending");
     } catch (error) {
       setStoError(error instanceof Error ? error.message : "Unexpected error.");
       setStoState("failed");
@@ -178,6 +190,7 @@ export default function IssuerPage() {
       </p>
 
       <div className="mt-8">
+        <OperatorTokenField />
         <label className={labelClass}>Start from a demo asset</label>
         <select
           value={assetId}

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prepareTransactions, signAndSend, pollTransactionStatus } from "@/lib/brickken";
+import { prepareTransactions, signAndSend, pollTransactionStatus, BrickkenApiError } from "@/lib/brickken";
 import { checkAgentPermission, addAgentLogEntry } from "@/lib/rams";
 import { isAuthorizedOperator } from "@/lib/auth";
 
@@ -75,6 +75,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ txId: sent.txId, status: finalStatus });
   } catch (error) {
+    if (error instanceof BrickkenApiError) {
+      return NextResponse.json(
+        { error: error.message, details: error.details },
+        { status: error.status }
+      );
+    }
     const message = error instanceof Error ? error.message : "Unknown error.";
     return NextResponse.json({ error: message }, { status: 500 });
   }

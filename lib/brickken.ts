@@ -197,7 +197,8 @@ export async function signAndSend(
     )
   );
 
-  return sendTransactions(prepared.txId, signedTransactions);
+  await sendTransactions(prepared.txId, signedTransactions);
+  return { txId: prepared.txId };
 }
 
 /**

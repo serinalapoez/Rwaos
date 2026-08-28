@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAssetWithOffering } from "@/lib/sandbox-data";
 import { getInvestorSession, InvestorSession } from "@/lib/investor-session";
+import { getOperatorToken } from "@/lib/operator-session";
+import { OperatorTokenField } from "@/components/OperatorTokenField";
 
 type CallState = "idle" | "submitting" | "confirmed" | "pending" | "failed";
 
@@ -51,7 +53,10 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
     try {
       const response = await fetch("/api/invest", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-operator-token": getOperatorToken(),
+        },
         body: JSON.stringify({
           investorEmail: session.email,
           tokenSymbol: offering.tokenSymbol,
@@ -68,7 +73,7 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
 
       setInvestTxId(data.txId ?? null);
       setInvestTxHash(data.status?.txHash ?? null);
-      setInvestState(data.status?.status === "confirmed" ? "confirmed" : "pending");
+      setInvestState(data.status?.status === "success" ? "confirmed" : "pending");
     } catch (error) {
       setInvestError(error instanceof Error ? error.message : "Unexpected error.");
       setInvestState("failed");
@@ -85,7 +90,10 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
     try {
       const response = await fetch("/api/claim", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-operator-token": getOperatorToken(),
+        },
         body: JSON.stringify({
           investorEmail: session.email,
           tokenSymbol: offering.tokenSymbol,
@@ -101,7 +109,7 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
 
       setClaimTxId(data.txId ?? null);
       setClaimTxHash(data.status?.txHash ?? null);
-      setClaimState(data.status?.status === "confirmed" ? "confirmed" : "pending");
+      setClaimState(data.status?.status === "success" ? "confirmed" : "pending");
     } catch (error) {
       setClaimError(error instanceof Error ? error.message : "Unexpected error.");
       setClaimState("failed");
@@ -143,6 +151,8 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
           Connected as {session.walletAddress}
         </p>
       )}
+
+      <OperatorTokenField />
 
       <form onSubmit={handleInvest} className="mt-8 space-y-4 rounded-xl border border-rwaos-border bg-rwaos-panel p-5">
         <h2 className="text-lg font-semibold text-rwaos-text">1. Invest</h2>

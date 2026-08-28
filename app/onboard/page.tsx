@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { OFFERINGS, ASSETS } from "@/lib/sandbox-data";
 import { setInvestorSession } from "@/lib/investor-session";
+import { getOperatorToken } from "@/lib/operator-session";
+import { OperatorTokenField } from "@/components/OperatorTokenField";
 
 type SubmitState = "idle" | "submitting" | "confirmed" | "failed" | "pending";
 
@@ -25,7 +28,10 @@ export default function OnboardPage() {
     try {
       const response = await fetch("/api/whitelist", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-operator-token": getOperatorToken(),
+        },
         body: JSON.stringify({ investorAddress, investorEmail, tokenSymbol }),
       });
 
@@ -39,7 +45,7 @@ export default function OnboardPage() {
 
       setTxId(data.txId ?? null);
       setTxHash(data.status?.txHash ?? null);
-      const nextState = data.status?.status === "confirmed" ? "confirmed" : "pending";
+      const nextState = data.status?.status === "success" ? "confirmed" : "pending";
       setState(nextState);
       if (nextState === "confirmed") {
         setInvestorSession({ walletAddress: investorAddress, email: investorEmail, tokenSymbol });
@@ -73,6 +79,7 @@ export default function OnboardPage() {
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+        <OperatorTokenField />
         <div>
           <label className="block text-sm text-rwaos-muted">Offering</label>
           <select
@@ -131,12 +138,9 @@ export default function OnboardPage() {
           {txId && <p className="mt-1 text-rwaos-muted">Transaction id: {txId}</p>}
           {txHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {txHash}</p>}
           {selectedAsset && (
-            
-              href={`/invest/${selectedAsset.id}`}
-              className="mt-3 inline-block text-rwaos-accent2"
-            >
+            <Link href={`/invest/${selectedAsset.id}`} className="mt-3 inline-block text-rwaos-accent2">
               Continue to invest
-            </a>
+            </Link>
           )}
         </div>
       )}
