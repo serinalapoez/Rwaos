@@ -3,16 +3,22 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getAssetWithOffering } from "@/lib/sandbox-data";
-import { getInvestorSession, InvestorSession } from "@/lib/investor-session";
-import { getOperatorToken } from "@/lib/operator-session";
+import { getInvestorSession } from "@/lib/investor-session";
 import { OperatorTokenField } from "@/components/OperatorTokenField";
+import {
+  connectWallet,
+  hasBrowserWallet,
+  sendAllTransactionsViaWallet,
+  WalletTransaction,
+} from "@/lib/wallet-client";
 
-type CallState = "idle" | "submitting" | "confirmed" | "pending" | "failed";
+type CallState = "idle" | "connecting" | "submitting" | "confirmed" | "pending" | "failed";
 
 export default function InvestPage({ params }: { params: { assetId: string } }) {
   const result = getAssetWithOffering(params.assetId);
-  const [session, setSession] = useState<InvestorSession | null>(null);
-  const [sessionChecked, setSessionChecked] = useState(false);
+  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [walletError, setWalletError] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
 
   const [amount, setAmount] = useState(
     result ? String(result.offering.minInvestmentUsd) : "0"
@@ -28,8 +34,8 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
   const [claimTxHash, setClaimTxHash] = useState<string | null>(null);
 
   useEffect(() => {
-    setSession(getInvestorSession());
-    setSessionChecked(true);
+    const session = getInvestorSession();
+    if (session?.email) setEmail(session.email);
   }, []);
 
   if (!result) {
@@ -42,38 +48,58 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
 
   const { asset, offering } = result;
 
+  async function handleConnect() {
+    setWalletError(null);
+    try {
+      const address = await connectWallet();
+      setWalletAddress(address);
+    } catch (error) {
+      setWalletError(error instanceof Error ? error.message : "Could not connect wallet.");
+    }
+  }
+
   async function handleInvest(event: React.FormEvent) {
     event.preventDefault();
-    if (!session) return;
+    if (!walletAddress) return;
     setInvestState("submitting");
     setInvestError(null);
     setInvestTxId(null);
     setInvestTxHash(null);
 
     try {
-      const response = await fetch("/api/invest", {
+      const prepareResponse = await fetch("/api/prepare-invest", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-operator-token": getOperatorToken(),
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          investorEmail: session.email,
+          investorEmail: email,
+          investorAddress: walletAddress,
           tokenSymbol: offering.tokenSymbol,
           investmentAmount: amount,
         }),
       });
-      const data = await response.json();
+      const prepared = await prepareResponse.json();
 
-      if (!response.ok) {
-        setInvestError(data.error ?? "Investment failed.");
+      if (!prepareResponse.ok) {
+        setInvestError(prepared.details ? `${prepared.error} - ${JSON.stringify(prepared.details)}` : prepared.error ?? "Preparing the investment failed.");
         setInvestState("failed");
         return;
       }
 
-      setInvestTxId(data.txId ?? null);
-      setInvestTxHash(data.status?.txHash ?? null);
-      setInvestState(data.status?.status === "success" ? "confirmed" : "pending");
+      const txHash = await sendAllTransactionsViaWallet(walletAddress, prepared.transactions as WalletTransaction[]);
+      const confirmResponse = await fetch("/api/confirm-invest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ txId: prepared.txId, txHash }),
+      });
+      const confirmed = await confirmResponse.json();
+      if (!confirmResponse.ok) {
+        setInvestError(confirmed.error ?? "Confirming the investment failed.");
+        setInvestState("failed");
+        return;
+      }
+      setInvestTxId(confirmed.txId ?? prepared.txId);
+      setInvestTxHash(confirmed.status?.transactionHash ?? txHash);
+      setInvestState(confirmed.status?.status === "success" ? "confirmed" : "pending");
     } catch (error) {
       setInvestError(error instanceof Error ? error.message : "Unexpected error.");
       setInvestState("failed");
@@ -81,61 +107,49 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
   }
 
   async function handleClaim() {
-    if (!session) return;
+    if (!walletAddress) return;
     setClaimState("submitting");
     setClaimError(null);
     setClaimTxId(null);
     setClaimTxHash(null);
 
     try {
-      const response = await fetch("/api/claim", {
+      const prepareResponse = await fetch("/api/prepare-claim", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-operator-token": getOperatorToken(),
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          investorEmail: session.email,
+          investorEmail: email,
+          investorAddress: walletAddress,
           tokenSymbol: offering.tokenSymbol,
         }),
       });
-      const data = await response.json();
+      const prepared = await prepareResponse.json();
 
-      if (!response.ok) {
-        setClaimError(data.error ?? "Claim failed.");
+      if (!prepareResponse.ok) {
+        setClaimError(prepared.details ? `${prepared.error} - ${JSON.stringify(prepared.details)}` : prepared.error ?? "Preparing the claim failed.");
         setClaimState("failed");
         return;
       }
 
-      setClaimTxId(data.txId ?? null);
-      setClaimTxHash(data.status?.txHash ?? null);
-      setClaimState(data.status?.status === "success" ? "confirmed" : "pending");
+      const txHash = await sendAllTransactionsViaWallet(walletAddress, prepared.transactions as WalletTransaction[]);
+      const confirmResponse = await fetch("/api/confirm-claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ txId: prepared.txId, txHash }),
+      });
+      const confirmed = await confirmResponse.json();
+      if (!confirmResponse.ok) {
+        setClaimError(confirmed.error ?? "Confirming the claim failed.");
+        setClaimState("failed");
+        return;
+      }
+      setClaimTxId(confirmed.txId ?? prepared.txId);
+      setClaimTxHash(confirmed.status?.transactionHash ?? txHash);
+      setClaimState(confirmed.status?.status === "success" ? "confirmed" : "pending");
     } catch (error) {
       setClaimError(error instanceof Error ? error.message : "Unexpected error.");
       setClaimState("failed");
     }
-  }
-
-  if (sessionChecked && !session) {
-    return (
-      <main className="mx-auto max-w-xl px-6 py-12">
-        <span className="rounded-full border border-rwaos-border px-3 py-1 text-xs uppercase tracking-widest text-rwaos-muted">
-          Sandbox environment
-        </span>
-        <h1 className="mt-4 font-serif text-3xl text-rwaos-text">
-          Connect first
-        </h1>
-        <p className="mt-2 text-rwaos-muted">
-          You need a whitelisted wallet before investing in {asset.name}.
-        </p>
-        <Link
-          href="/onboard"
-          className="mt-6 inline-block rounded-lg bg-rwaos-accent2 px-4 py-2 font-medium text-rwaos-bg"
-        >
-          Connect a wallet
-        </Link>
-      </main>
-    );
   }
 
   return (
@@ -146,11 +160,20 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
       <h1 className="mt-4 font-serif text-3xl text-rwaos-text">
         Invest in {asset.name}
       </h1>
-      {session && (
+      {walletAddress ? (
         <p className="mt-2 font-mono text-xs text-rwaos-muted">
-          Connected as {session.walletAddress}
+          Connected as {walletAddress}
+        </p>
+      ) : hasBrowserWallet() ? (
+        <button onClick={handleConnect} className="mt-4 rounded-lg bg-rwaos-accent2 px-4 py-2 font-medium text-rwaos-bg">
+          Connect wallet
+        </button>
+      ) : (
+        <p className="mt-2 text-sm text-rwaos-muted">
+          No browser wallet detected. Install MetaMask or a similar wallet to invest with your own address.
         </p>
       )}
+      {walletError && <p className="mt-2 text-xs text-rwaos-danger">{walletError}</p>}
 
       <OperatorTokenField />
 
@@ -169,10 +192,10 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
         </div>
         <button
           type="submit"
-          disabled={investState === "submitting"}
+          disabled={!walletAddress || investState === "submitting"}
           className="w-full rounded-lg bg-rwaos-accent2 px-4 py-2 font-medium text-rwaos-bg disabled:opacity-50"
         >
-          {investState === "submitting" ? "Sending to Brickken sandbox..." : "Invest"}
+          {investState === "submitting" ? "Waiting for wallet..." : "Invest"}
         </button>
 
         {investState === "confirmed" && (
@@ -201,10 +224,10 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
         </p>
         <button
           onClick={handleClaim}
-          disabled={claimState === "submitting"}
+          disabled={!walletAddress || claimState === "submitting"}
           className="w-full rounded-lg border border-rwaos-accent2 px-4 py-2 font-medium text-rwaos-accent2 disabled:opacity-50"
         >
-          {claimState === "submitting" ? "Sending to Brickken sandbox..." : "Claim tokens"}
+          {claimState === "submitting" ? "Waiting for wallet..." : "Claim tokens"}
         </button>
 
         {claimState === "confirmed" && (

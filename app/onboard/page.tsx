@@ -6,6 +6,7 @@ import { OFFERINGS, ASSETS } from "@/lib/sandbox-data";
 import { setInvestorSession } from "@/lib/investor-session";
 import { getOperatorToken } from "@/lib/operator-session";
 import { OperatorTokenField } from "@/components/OperatorTokenField";
+import { connectWallet, hasBrowserWallet } from "@/lib/wallet-client";
 
 type SubmitState = "idle" | "submitting" | "confirmed" | "failed" | "pending";
 
@@ -17,6 +18,17 @@ export default function OnboardPage() {
   const [txId, setTxId] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [walletError, setWalletError] = useState<string | null>(null);
+
+  async function handleConnectWallet() {
+    setWalletError(null);
+    try {
+      const address = await connectWallet();
+      setInvestorAddress(address);
+    } catch (error) {
+      setWalletError(error instanceof Error ? error.message : "Could not connect wallet.");
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -73,9 +85,8 @@ export default function OnboardPage() {
       </h1>
       <p className="mt-2 text-rwaos-muted">
         Whitelisting is checked and executed directly against Brickken's
-        sandbox. There is no separate identity provider in this build; a
-        wallet becomes eligible to invest once Brickken confirms it is
-        whitelisted for the chosen offering.
+        sandbox. Connect a wallet to fill in your address accurately, or
+        enter it by hand if you are not using a browser wallet.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -99,9 +110,14 @@ export default function OnboardPage() {
         </div>
 
         <div>
-          <label className="block text-sm text-rwaos-muted">
-            Wallet address
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm text-rwaos-muted">Wallet address</label>
+            {hasBrowserWallet() && (
+              <button type="button" onClick={handleConnectWallet} className="text-xs text-rwaos-accent2">
+                Connect wallet
+              </button>
+            )}
+          </div>
           <input
             required
             value={investorAddress}
@@ -109,6 +125,7 @@ export default function OnboardPage() {
             placeholder="0x..."
             className="mt-1 w-full rounded-lg border border-rwaos-border bg-rwaos-panel px-3 py-2 text-rwaos-text"
           />
+          {walletError && <p className="mt-1 text-xs text-rwaos-danger">{walletError}</p>}
         </div>
 
         <div>
