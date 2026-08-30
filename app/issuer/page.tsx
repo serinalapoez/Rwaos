@@ -53,21 +53,28 @@ export default function IssuerPage() {
   const [maxInvestment, setMaxInvestment] = useState(
     offering ? String(offering.maxInvestmentUsd) : "10000"
   );
-  const [startDate, setStartDate] = useState(() => {
-    const start = new Date();
-    start.setUTCDate(start.getUTCDate() + 1);
-    return start.toISOString();
-  });
-  const [endDate, setEndDate] = useState(() => {
-    const end = new Date();
-    end.setUTCDate(end.getUTCDate() + 45);
-    return end.toISOString();
-  });
+  const [startDate, setStartDate] = useState(
+    offering ? `${offering.startDate}T00:00:00.000Z` : ""
+  );
+  const [endDate, setEndDate] = useState(
+    offering ? `${offering.endDate}T23:59:59.000Z` : ""
+  );
 
   const [stoState, setStoState] = useState<CallState>("idle");
   const [stoError, setStoError] = useState<string | null>(null);
   const [stoTxId, setStoTxId] = useState<string | null>(null);
   const [stoTxHash, setStoTxHash] = useState<string | null>(null);
+
+  const [closeState, setCloseState] = useState<CallState>("idle");
+  const [closeError, setCloseError] = useState<string | null>(null);
+  const [closeTxId, setCloseTxId] = useState<string | null>(null);
+  const [closeTxHash, setCloseTxHash] = useState<string | null>(null);
+
+  const [dividendAmount, setDividendAmount] = useState("100");
+  const [dividendState, setDividendState] = useState<CallState>("idle");
+  const [dividendError, setDividendError] = useState<string | null>(null);
+  const [dividendTxId, setDividendTxId] = useState<string | null>(null);
+  const [dividendTxHash, setDividendTxHash] = useState<string | null>(null);
 
   function handleAssetChange(nextAssetId: string) {
     setAssetId(nextAssetId);
@@ -83,12 +90,8 @@ export default function IssuerPage() {
     setMaxRaiseUSD(String(nextOffering.raiseTargetUsd));
     setMinInvestment(String(nextOffering.minInvestmentUsd));
     setMaxInvestment(String(nextOffering.maxInvestmentUsd));
-    const start = new Date();
-    start.setUTCDate(start.getUTCDate() + 1);
-    setStartDate(start.toISOString());
-    const end = new Date();
-    end.setUTCDate(end.getUTCDate() + 45);
-    setEndDate(end.toISOString());
+    setStartDate(`${nextOffering.startDate}T00:00:00.000Z`);
+    setEndDate(`${nextOffering.endDate}T23:59:59.000Z`);
   }
 
   async function handleTokenize(event: React.FormEvent) {
@@ -126,7 +129,7 @@ export default function IssuerPage() {
 
       setTokenizeTxId(data.txId ?? null);
       setTokenizeTxHash(data.status?.txHash ?? null);
-      setTokenizeState(data.status?.status === "success" ? "confirmed" : "pending");
+      setTokenizeState(data.status?.status === "confirmed" ? "confirmed" : "pending");
     } catch (error) {
       setTokenizeError(error instanceof Error ? error.message : "Unexpected error.");
       setTokenizeState("failed");
@@ -164,19 +167,85 @@ export default function IssuerPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setStoError(
-          data.details ? `${data.error} - ${JSON.stringify(data.details)}` : data.error ?? "Creating the offering failed."
-        );
+        setStoError(data.error ?? "Creating the offering failed.");
         setStoState("failed");
         return;
       }
 
       setStoTxId(data.txId ?? null);
       setStoTxHash(data.status?.txHash ?? null);
-      setStoState(data.status?.status === "success" ? "confirmed" : "pending");
+      setStoState(data.status?.status === "confirmed" ? "confirmed" : "pending");
     } catch (error) {
       setStoError(error instanceof Error ? error.message : "Unexpected error.");
       setStoState("failed");
+    }
+  }
+
+  async function handleCloseOffer() {
+    setCloseState("submitting");
+    setCloseError(null);
+    setCloseTxId(null);
+    setCloseTxHash(null);
+
+    try {
+      const response = await fetch("/api/close-offering", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-operator-token": getOperatorToken(),
+        },
+        body: JSON.stringify({ tokenizerEmail, tokenSymbol }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setCloseError(
+          data.details ? `${data.error} - ${JSON.stringify(data.details)}` : data.error ?? "Closing the offering failed."
+        );
+        setCloseState("failed");
+        return;
+      }
+
+      setCloseTxId(data.txId ?? null);
+      setCloseTxHash(data.status?.transactionHash ?? null);
+      setCloseState(data.status?.status === "success" ? "confirmed" : "pending");
+    } catch (error) {
+      setCloseError(error instanceof Error ? error.message : "Unexpected error.");
+      setCloseState("failed");
+    }
+  }
+
+  async function handleDistributeDividend() {
+    setDividendState("submitting");
+    setDividendError(null);
+    setDividendTxId(null);
+    setDividendTxHash(null);
+
+    try {
+      const response = await fetch("/api/distribute-dividend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-operator-token": getOperatorToken(),
+        },
+        body: JSON.stringify({ tokenSymbol, amount: dividendAmount }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setDividendError(
+          data.details ? `${data.error} - ${JSON.stringify(data.details)}` : data.error ?? "Distributing the dividend failed."
+        );
+        setDividendState("failed");
+        return;
+      }
+
+      setDividendTxId(data.txId ?? null);
+      setDividendTxHash(data.status?.transactionHash ?? null);
+      setDividendState(data.status?.status === "success" ? "confirmed" : "pending");
+    } catch (error) {
+      setDividendError(error instanceof Error ? error.message : "Unexpected error.");
+      setDividendState("failed");
     }
   }
 
@@ -418,6 +487,84 @@ export default function IssuerPage() {
           </div>
         )}
       </form>
+
+      <div className="mt-6 space-y-4 rounded-xl border border-rwaos-border bg-rwaos-panel p-5">
+        <h2 className="text-lg font-semibold text-rwaos-text">
+          3. Close the offering
+        </h2>
+        <p className="text-xs text-rwaos-muted">
+          Ends the offering above for {tokenSymbol}. Only the tokenizer wallet can do this.
+        </p>
+        <button
+          type="button"
+          onClick={handleCloseOffer}
+          disabled={closeState === "submitting"}
+          className="w-full rounded-lg border border-rwaos-accent2 px-4 py-2 font-medium text-rwaos-accent2 disabled:opacity-50"
+        >
+          {closeState === "submitting" ? "Sending to Brickken sandbox..." : "Close this offering"}
+        </button>
+
+        {closeState === "confirmed" && (
+          <div className="rounded-lg border border-rwaos-accent p-3 text-sm">
+            <p className="text-rwaos-accent">Offering closed and confirmed onchain.</p>
+            {closeTxId && <p className="mt-1 text-rwaos-muted">Transaction id: {closeTxId}</p>}
+            {closeTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {closeTxHash}</p>}
+          </div>
+        )}
+        {closeState === "pending" && (
+          <div className="rounded-lg border border-rwaos-warn p-3 text-sm text-rwaos-warn">
+            Submitted, still confirming onchain. Transaction id: {closeTxId}
+          </div>
+        )}
+        {closeState === "failed" && (
+          <div className="rounded-lg border border-rwaos-danger p-3 text-sm text-rwaos-danger">
+            {closeError}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 space-y-4 rounded-xl border border-rwaos-border bg-rwaos-panel p-5">
+        <h2 className="text-lg font-semibold text-rwaos-text">
+          4. Distribute a dividend
+        </h2>
+        <p className="text-xs text-rwaos-muted">
+          Pays out to holders of {tokenSymbol}. Only the tokenizer wallet can do this.
+        </p>
+        <div>
+          <label className={labelClass}>Amount</label>
+          <input
+            value={dividendAmount}
+            onChange={(event) => setDividendAmount(event.target.value)}
+            className={inputClass}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleDistributeDividend}
+          disabled={dividendState === "submitting"}
+          className="w-full rounded-lg border border-rwaos-accent2 px-4 py-2 font-medium text-rwaos-accent2 disabled:opacity-50"
+        >
+          {dividendState === "submitting" ? "Sending to Brickken sandbox..." : "Distribute dividend"}
+        </button>
+
+        {dividendState === "confirmed" && (
+          <div className="rounded-lg border border-rwaos-accent p-3 text-sm">
+            <p className="text-rwaos-accent">Dividend distributed and confirmed onchain.</p>
+            {dividendTxId && <p className="mt-1 text-rwaos-muted">Transaction id: {dividendTxId}</p>}
+            {dividendTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {dividendTxHash}</p>}
+          </div>
+        )}
+        {dividendState === "pending" && (
+          <div className="rounded-lg border border-rwaos-warn p-3 text-sm text-rwaos-warn">
+            Submitted, still confirming onchain. Transaction id: {dividendTxId}
+          </div>
+        )}
+        {dividendState === "failed" && (
+          <div className="rounded-lg border border-rwaos-danger p-3 text-sm text-rwaos-danger">
+            {dividendError}
+          </div>
+        )}
+      </div>
     </main>
   );
 }
