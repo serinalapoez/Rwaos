@@ -5,6 +5,7 @@ import { ASSETS, OFFERINGS } from "@/lib/sandbox-data";
 import { AssetCategory } from "@/types/domain";
 import { getOperatorToken } from "@/lib/operator-session";
 import { OperatorTokenField } from "@/components/OperatorTokenField";
+import { TxHashLink } from "@/components/TxHashLink";
 
 type CallState = "idle" | "submitting" | "confirmed" | "pending" | "failed";
 
@@ -90,8 +91,12 @@ export default function IssuerPage() {
     setMaxRaiseUSD(String(nextOffering.raiseTargetUsd));
     setMinInvestment(String(nextOffering.minInvestmentUsd));
     setMaxInvestment(String(nextOffering.maxInvestmentUsd));
-    setStartDate(`${nextOffering.startDate}T00:00:00.000Z`);
-    setEndDate(`${nextOffering.endDate}T23:59:59.000Z`);
+    const start = new Date();
+    start.setUTCMinutes(start.getUTCMinutes() + 2);
+    setStartDate(start.toISOString());
+    const end = new Date();
+    end.setUTCMinutes(end.getUTCMinutes() + 10);
+    setEndDate(end.toISOString());
   }
 
   async function handleTokenize(event: React.FormEvent) {
@@ -167,7 +172,9 @@ export default function IssuerPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setStoError(data.error ?? "Creating the offering failed.");
+        setStoError(
+          data.details ? `${data.error} - ${JSON.stringify(data.details)}` : data.error ?? "Creating the offering failed."
+        );
         setStoState("failed");
         return;
       }
@@ -363,7 +370,7 @@ export default function IssuerPage() {
           <div className="rounded-lg border border-rwaos-accent p-3 text-sm">
             <p className="text-rwaos-accent">Tokenized and confirmed onchain.</p>
             {tokenizeTxId && <p className="mt-1 text-rwaos-muted">Transaction id: {tokenizeTxId}</p>}
-            {tokenizeTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {tokenizeTxHash}</p>}
+            {tokenizeTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: <TxHashLink txHash={tokenizeTxHash} /></p>}
           </div>
         )}
         {tokenizeState === "pending" && (
@@ -473,7 +480,7 @@ export default function IssuerPage() {
           <div className="rounded-lg border border-rwaos-accent p-3 text-sm">
             <p className="text-rwaos-accent">Offering launched and confirmed onchain.</p>
             {stoTxId && <p className="mt-1 text-rwaos-muted">Transaction id: {stoTxId}</p>}
-            {stoTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {stoTxHash}</p>}
+            {stoTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: <TxHashLink txHash={stoTxHash} /></p>}
           </div>
         )}
         {stoState === "pending" && (
@@ -508,7 +515,7 @@ export default function IssuerPage() {
           <div className="rounded-lg border border-rwaos-accent p-3 text-sm">
             <p className="text-rwaos-accent">Offering closed and confirmed onchain.</p>
             {closeTxId && <p className="mt-1 text-rwaos-muted">Transaction id: {closeTxId}</p>}
-            {closeTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {closeTxHash}</p>}
+            {closeTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: <TxHashLink txHash={closeTxHash} /></p>}
           </div>
         )}
         {closeState === "pending" && (
@@ -551,7 +558,7 @@ export default function IssuerPage() {
           <div className="rounded-lg border border-rwaos-accent p-3 text-sm">
             <p className="text-rwaos-accent">Dividend distributed and confirmed onchain.</p>
             {dividendTxId && <p className="mt-1 text-rwaos-muted">Transaction id: {dividendTxId}</p>}
-            {dividendTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {dividendTxHash}</p>}
+            {dividendTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: <TxHashLink txHash={dividendTxHash} /></p>}
           </div>
         )}
         {dividendState === "pending" && (

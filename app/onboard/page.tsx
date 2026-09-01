@@ -6,6 +6,7 @@ import { OFFERINGS, ASSETS } from "@/lib/sandbox-data";
 import { setInvestorSession } from "@/lib/investor-session";
 import { getOperatorToken } from "@/lib/operator-session";
 import { OperatorTokenField } from "@/components/OperatorTokenField";
+import { TxHashLink } from "@/components/TxHashLink";
 import { connectWallet, hasBrowserWallet } from "@/lib/wallet-client";
 
 type SubmitState = "idle" | "submitting" | "confirmed" | "failed" | "pending";
@@ -153,7 +154,7 @@ export default function OnboardPage() {
         <div className="mt-6 rounded-lg border border-rwaos-accent bg-rwaos-panel p-4 text-sm">
           <p className="text-rwaos-accent">Whitelisted and confirmed onchain.</p>
           {txId && <p className="mt-1 text-rwaos-muted">Transaction id: {txId}</p>}
-          {txHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {txHash}</p>}
+          {txHash && <p className="mt-1 text-rwaos-muted">Transaction hash: <TxHashLink txHash={txHash} /></p>}
           {selectedAsset && (
             <Link href={`/invest/${selectedAsset.id}`} className="mt-3 inline-block text-rwaos-accent2">
               Continue to invest

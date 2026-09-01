@@ -5,9 +5,21 @@
  * before any Brickken call is made, so a rejected action never reaches
  * the sandbox.
  *
- * The activity log is in-memory and resets when the dev server restarts.
- * That is fine for a demo; a production deployment would persist this.
+ * The activity log is stored in Upstash Redis, since Vercel's serverless
+ * functions do not share in-memory state between invocations. Without
+ * genuine persistence, the log would appear empty even after true activity,
+ * since a write and a later read can land on different function instances.
  */
+
+import { Redis } from "@upstash/redis";
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL ?? "",
+  token: process.env.KV_REST_API_TOKEN ?? "",
+});
+
+const LOG_KEY = "rwaos:agent-log";
+const LOG_MAX_ENTRIES = 50;
 
 export type AgentId = "issuer-agent" | "investor-agent";
 
@@ -125,17 +137,22 @@ export type AgentLogEntry = {
   reason: string;
 };
 
-const activityLog: AgentLogEntry[] = [];
-
-export function addAgentLogEntry(entry: Omit<AgentLogEntry, "id" | "timestamp">) {
-  activityLog.unshift({
+export async function addAgentLogEntry(
+  entry: Omit<AgentLogEntry, "id" | "timestamp">
+): Promise<void> {
+  const fullEntry: AgentLogEntry = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     timestamp: new Date().toISOString(),
     ...entry,
-  });
-  if (activityLog.length > 50) activityLog.length = 50;
+  };
+
+  await redis.lpush(LOG_KEY, JSON.stringify(fullEntry));
+  await redis.ltrim(LOG_KEY, 0, LOG_MAX_ENTRIES - 1);
 }
 
-export function getAgentLog(): AgentLogEntry[] {
-  return activityLog;
+export async function getAgentLog(): Promise<AgentLogEntry[]> {
+  const raw = await redis.lrange(LOG_KEY, 0, LOG_MAX_ENTRIES - 1);
+  return raw.map((item) =>
+    typeof item === "string" ? JSON.parse(item) : (item as AgentLogEntry)
+  );
 }

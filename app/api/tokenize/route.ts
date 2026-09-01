@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       tokenSymbol,
     });
 
-    addAgentLogEntry({
+    await addAgentLogEntry({
       agentId: "issuer-agent",
       action: "newTokenization",
       outcome: permission.allowed ? "approved" : "rejected",
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       timeoutMs: 120000,
     });
 
-    addAgentLogEntry({
+    await addAgentLogEntry({
       agentId: "issuer-agent",
       action: "newTokenization",
       outcome: "executed",

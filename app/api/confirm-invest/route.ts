@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       timeoutMs: 120000,
     });
 
-    addAgentLogEntry({
+    await addAgentLogEntry({
       agentId: "investor-agent",
       action: "newInvest (wallet connect)",
       outcome: "executed",

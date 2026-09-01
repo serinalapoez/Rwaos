@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       tokenSymbol,
     });
 
-    addAgentLogEntry({
+    await addAgentLogEntry({
       agentId: "investor-agent",
       action: "newInvest (wallet connect)",
       outcome: permission.allowed ? "approved" : "rejected",

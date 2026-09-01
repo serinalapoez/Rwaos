@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getAssetWithOffering } from "@/lib/sandbox-data";
 import { getInvestorSession } from "@/lib/investor-session";
 import { OperatorTokenField } from "@/components/OperatorTokenField";
+import { TxHashLink } from "@/components/TxHashLink";
 import {
   connectWallet,
   hasBrowserWallet,
@@ -202,7 +203,7 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
           <div className="rounded-lg border border-rwaos-accent p-3 text-sm">
             <p className="text-rwaos-accent">Investment confirmed onchain.</p>
             {investTxId && <p className="mt-1 text-rwaos-muted">Transaction id: {investTxId}</p>}
-            {investTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {investTxHash}</p>}
+            {investTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: <TxHashLink txHash={investTxHash} /></p>}
           </div>
         )}
         {investState === "pending" && (
@@ -234,7 +235,7 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
           <div className="rounded-lg border border-rwaos-accent p-3 text-sm">
             <p className="text-rwaos-accent">Tokens claimed and confirmed onchain.</p>
             {claimTxId && <p className="mt-1 text-rwaos-muted">Transaction id: {claimTxId}</p>}
-            {claimTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: {claimTxHash}</p>}
+            {claimTxHash && <p className="mt-1 text-rwaos-muted">Transaction hash: <TxHashLink txHash={claimTxHash} /></p>}
           </div>
         )}
         {claimState === "pending" && (
