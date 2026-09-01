@@ -94,7 +94,9 @@ export default function InvestPage({ params }: { params: { assetId: string } }) 
       });
       const confirmed = await confirmResponse.json();
       if (!confirmResponse.ok) {
-        setInvestError(confirmed.error ?? "Confirming the investment failed.");
+        setInvestError(
+          confirmed.details ? `${confirmed.error} - ${JSON.stringify(confirmed.details)}` : confirmed.error ?? "Confirming the investment failed."
+        );
         setInvestState("failed");
         return;
       }

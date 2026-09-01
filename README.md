@@ -39,6 +39,9 @@ All transactions below are genuine, confirmed on Ethereum Sepolia (chainId `1115
 | MV Bonny Trader (BNTR) offering launch | `newSto` | Issuer signer | `0x63d5d648e47fe62057b7fdd08bb9a2bc590750d4fd284d67d7357beeadd52c40` |
 | Sabi Sounds (SABI) tokenization | `newTokenization` | Issuer signer | `0x6ffc1016ccf1cd2ff4202c2e5fb7f1f940ba3986ed09b2229ceee2f75d0c3c1a` |
 | Sabi Sounds (SABI) offering launch | `newSto` | Issuer signer | `0x614a2edf61064da3bda9e1bc1cd11dd4591af578d3ad488d784cc27eb95dddcb` |
+| SABI investment (200 USDT) | `newInvest` (wallet connect) | Investor wallet | `0x859d410b779f9892838ab69519637f9ca1c90f160eeb586758c8f6f8549b6a3f` |
+| ORGN investment | `newInvest` (wallet connect) | Investor wallet | `0x9ca27a4b7a48701cde0fbf61fc12934bf2e4a7ae810efd47a2ebfc1dfec61fc1` |
+| FSHL investment (250 USDT) | `newInvest` (wallet connect) | Investor wallet | `0xe9a586ed00aa7ffe21e3b9a42e981b65ec030b3cc65bf131cd92c4b8ca8e954a` |
 
 ## Stack
 
