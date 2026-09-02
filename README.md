@@ -41,8 +41,10 @@ All transactions below are genuine, confirmed on Ethereum Sepolia (chainId `1115
 | Sabi Sounds (SABI) offering launch | `newSto` | Issuer signer | `0x614a2edf61064da3bda9e1bc1cd11dd4591af578d3ad488d784cc27eb95dddcb` |
 | SABI investment (200 USDT) | `newInvest` (wallet connect) | Investor wallet | `0x859d410b779f9892838ab69519637f9ca1c90f160eeb586758c8f6f8549b6a3f` |
 | ORGN investment | `newInvest` (wallet connect) | Investor wallet | `0x9ca27a4b7a48701cde0fbf61fc12934bf2e4a7ae810efd47a2ebfc1dfec61fc1` |
-| FSHL investment (250 USDT) | `newInvest` (wallet connect) | Investor wallet | `0xe9a586ed00aa7ffe21e3b9a42e981b65ec030b3cc65bf131cd92c4b8ca8e954a` |
+| FSHL investment (200 USDT) | `newInvest` (wallet connect) | Investor wallet | `0xe9a586ed00aa7ffe21e3b9a42e981b65ec030b3cc65bf131cd92c4b8ca8e954a` |
 | BNTR investment (300 USDT) | `newInvest` (wallet connect) | Investor wallet | `0x86e2da4c7885c555448a2809cf32aafeb598180b610839359d50afc449463e07` |
+| Test issuance (TEST2) offering launch, used to validate close and claim | `newSto` | Issuer signer | `0x944e95c19846393653969aa56bdc4dedd45f614bef04c23b4ed22b4df0fc0f94` |
+| Test issuance (TEST2) investment (50 USDT) | `newInvest` (wallet connect) | Investor wallet | `0x71a18b7447dc519df0d47cb30d639f3e474f2bfec539e9ae9db374d537bb17b4` |
 
 ## Stack
 
