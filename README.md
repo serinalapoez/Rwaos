@@ -42,6 +42,7 @@ All transactions below are genuine, confirmed on Ethereum Sepolia (chainId `1115
 | SABI investment (200 USDT) | `newInvest` (wallet connect) | Investor wallet | `0x859d410b779f9892838ab69519637f9ca1c90f160eeb586758c8f6f8549b6a3f` |
 | ORGN investment | `newInvest` (wallet connect) | Investor wallet | `0x9ca27a4b7a48701cde0fbf61fc12934bf2e4a7ae810efd47a2ebfc1dfec61fc1` |
 | FSHL investment (250 USDT) | `newInvest` (wallet connect) | Investor wallet | `0xe9a586ed00aa7ffe21e3b9a42e981b65ec030b3cc65bf131cd92c4b8ca8e954a` |
+| BNTR investment (300 USDT) | `newInvest` (wallet connect) | Investor wallet | `0x86e2da4c7885c555448a2809cf32aafeb598180b610839359d50afc449463e07` |
 
 ## Stack
 

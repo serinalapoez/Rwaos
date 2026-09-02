@@ -48,6 +48,14 @@ export const ASSETS: Asset[] = [
     valuationUsd: 200000,
     documentationUrl: "#",
   },
+  {
+    id: "test-asset-2",
+    name: "Test Asset 2",
+    category: "equipment",
+    description: "A short-window test issuance used to validate close and claim.",
+    valuationUsd: 1000,
+    documentationUrl: "#",
+  },
 ];
 
 export const OFFERINGS: Offering[] = [
@@ -102,6 +110,19 @@ export const OFFERINGS: Offering[] = [
     startDate: "2026-07-01",
     endDate: "2026-08-01",
     status: "active",
+  },
+  {
+    id: "test2-sto",
+    assetId: "test-asset-2",
+    tokenSymbol: "TEST2",
+    raiseTargetUsd: 100,
+    raisedUsd: 0,
+    minInvestmentUsd: 10,
+    maxInvestmentUsd: 100,
+    paymentToken: "Sandbox USDT",
+    startDate: "2026-09-02",
+    endDate: "2026-09-02",
+    status: "funding",
   },
 ];
 

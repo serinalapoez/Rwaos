@@ -38,7 +38,7 @@ export type AgentDefinition = {
   permissions: AgentPermission[];
 };
 
-const ALLOWED_TOKEN_SYMBOLS = ["ORGN", "FSHL", "BNTR", "SABI"];
+const ALLOWED_TOKEN_SYMBOLS = ["ORGN", "FSHL", "BNTR", "SABI", "TEST2"];
 
 export function getAgentDefinitions(): AgentDefinition[] {
   return [
